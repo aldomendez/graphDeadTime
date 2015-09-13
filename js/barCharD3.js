@@ -32,12 +32,16 @@ d3.csv('toolbox.php/type/silens',function (data) {
   
 // Genero los valores iniciales para el marco del grafico
   var margin = {top: 40, right: 40, bottom: 40, left:40},
-      width = 1800,
-      height = 360+40*2,
-      titleSpace = 180;
+      width = 1500,
+      height = 400+margin.top + margin.bottom,
+      titleSpace = 180,
+      firstTime = new Date((new Date(data[0].PROCESS_DATE.valueOf())).setSeconds(-data[0].CYCLE_TIME)),
+      machineSize = 40
+      lastTime = data[data.length - 1].PROCESS_DATE 
+
 
   var x = d3.time.scale()
-      .domain([new Date((new Date(data[0].PROCESS_DATE.valueOf())).setSeconds(-data[0].CYCLE_TIME)), data[data.length - 1].PROCESS_DATE ])
+      .domain([firstTime, lastTime])
       .rangeRound([titleSpace, width - margin.left - margin.right]);
 
   var y = d3.scale.linear()
@@ -60,6 +64,27 @@ d3.csv('toolbox.php/type/silens',function (data) {
       .attr('height', height)
     .append('g')
       .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
+    svg.selectAll('.chart')
+      .data('a')
+      .enter().append('line')
+      .attr('class','startLine')
+      .attr('x1',function () {
+        return x(firstTime)
+      })
+      .attr('y1',function () {
+        return 0
+      })
+      .attr('x2',function () {
+        return x(firstTime)
+      })
+      .attr('y2',function () {
+        return height-margin.top - margin.bottom
+      })
+      .attr('stroke','black')
+      .attr('stroke-width',1)
+
+
 
   /*var yAxis = d3.svg.axis()
       .scale(y)
@@ -87,8 +112,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
     data = el[1]
     name = el[0]
 
-  machineSize = 36
-  machineOffset = i*machineSize
+  var machineOffset = i*machineSize -1
 
 
 
@@ -100,7 +124,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
     el.ct = el.CYCLE_TIME/60 
     //el.ct = (el.CYCLE_TIME/60>150)?150:el.CYCLE_TIME/60
     el.ct = 8
-    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-1200)) //process cycle time
+    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-955)) //process cycle time
     el.dt_start = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-el.CYCLE_TIME))
     
     if(index === 0){
@@ -115,17 +139,39 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
   })
 
 // Agrega los nombres de las maquinas
-    svg.selectAll('.chart').
-      data([name])
+    svg.selectAll('.chart')
+      .data([name])
       .enter().append('text')
       .attr('class','bonderName')
-      .attr('x',30)
+      .attr('x',10)
       .attr('y',function () {
-        return machineOffset + machineSize/2
+        return height - margin.top - margin.bottom - machineOffset - machineSize/2
       })
       .text(function () {
         return name;
       })
+
+// Linea de separacion entre maquinas
+    svg.selectAll('.chart')
+      .data('a')
+      .enter().append('line')
+      .attr('class','divisionLine')
+      .attr('x1',function () {
+        return 0
+      })
+      .attr('y1',function () {
+        return machineOffset
+      })
+      .attr('x2',function () {
+        return x(lastTime)
+      })
+      .attr('y2',function () {
+        return machineOffset
+      })
+      .attr('stroke','black')
+      .attr('stroke-width',1)
+
+
 
 
 //lineas azules indican el punto en el tiempo en es que se registro la medicion
@@ -154,7 +200,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
-      .attr('class', 'deadTime')
+      .attr('class', 'process_time')
       .attr('x1', function(d) {
         return x(d.dt_start)+6; 
       })
@@ -167,7 +213,9 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
       })
       .attr('stroke','green')
       .attr('stroke-width',12);
-// lineas naranjas o amarillas indican el tiempo de proceso del equipo
+
+
+// lineas naranjas o amarillas indican el tiempo de proceso exedente de la pieza
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
@@ -190,7 +238,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
       .attr('stroke-width',12);
 
 
-// lineas rojas indican el tiempo de proceso del equipo
+// lineas rojas indican el tiempo muerto (iddleTime)
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
