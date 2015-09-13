@@ -65,24 +65,24 @@ d3.csv('toolbox.php/type/silens',function (data) {
     .append('g')
       .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-    svg.selectAll('.chart')
-      .data('a')
-      .enter().append('line')
-      .attr('class','startLine')
-      .attr('x1',function () {
-        return x(firstTime)
-      })
-      .attr('y1',function () {
-        return 0
-      })
-      .attr('x2',function () {
-        return x(firstTime)
-      })
-      .attr('y2',function () {
-        return height-margin.top - margin.bottom
-      })
-      .attr('stroke','black')
-      .attr('stroke-width',1)
+    // svg.selectAll('.chart')
+    //   .data('a')
+    //   .enter().append('line')
+    //   .attr('class','startLine')
+    //   .attr('x1',function () {
+    //     return x(firstTime)
+    //   })
+    //   .attr('y1',function () {
+    //     return 0
+    //   })
+    //   .attr('x2',function () {
+    //     return x(firstTime)
+    //   })
+    //   .attr('y2',function () {
+    //     return height-margin.top - margin.bottom
+    //   })
+    //   .attr('stroke','black')
+    //   .attr('stroke-width',1)
 
 
 
@@ -124,7 +124,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
     el.ct = el.CYCLE_TIME/60 
     //el.ct = (el.CYCLE_TIME/60>150)?150:el.CYCLE_TIME/60
     el.ct = 8
-    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-955)) //process cycle time
+    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-1200)) //process cycle time
     el.dt_start = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-el.CYCLE_TIME))
     
     if(index === 0){
@@ -138,38 +138,51 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
     return el;
   })
 
+// svg.append('g').attr(class)
+
 // Agrega los nombres de las maquinas
     svg.selectAll('.chart')
       .data([name])
       .enter().append('text')
-      .attr('class','bonderName')
+      .attr('class','bonderName bonder ' + name)
       .attr('x',10)
       .attr('y',function () {
         return height - margin.top - margin.bottom - machineOffset - machineSize/2
       })
       .text(function () {
         return name;
+      }).on('click',function (e) {
+        var active = d3.select(this).attr('v-active')
+        console.log(active,e);
+        if(active == e){
+          console.log('deselect all');
+          d3.selectAll('.bonder').attr('v-active', 'all').transition().duration(200).style('opacity',1)
+        }else{
+          console.log('select only some');
+          d3.selectAll('.bonder').attr('v-active', e).transition().duration(200).style('opacity',0.1)
+          d3.selectAll('.'+e).attr('v-active',e).transition().duration(300).delay(180).style('opacity',1)
+        }
       })
 
 // Linea de separacion entre maquinas
-    svg.selectAll('.chart')
-      .data('a')
-      .enter().append('line')
-      .attr('class','divisionLine')
-      .attr('x1',function () {
-        return 0
-      })
-      .attr('y1',function () {
-        return machineOffset
-      })
-      .attr('x2',function () {
-        return x(lastTime)
-      })
-      .attr('y2',function () {
-        return machineOffset
-      })
-      .attr('stroke','black')
-      .attr('stroke-width',1)
+    // svg.selectAll('.chart')
+    //   .data('a')
+    //   .enter().append('line')
+    //   .attr('class','divisionLine')
+    //   .attr('x1',function () {
+    //     return 0
+    //   })
+    //   .attr('y1',function () {
+    //     return height - margin.top - margin.bottom - machineOffset - machineSize - 2
+    //   })
+    //   .attr('x2',function () {
+    //     return x(lastTime)
+    //   })
+    //   .attr('y2',function () {
+    //     return height - margin.top - margin.bottom - machineOffset - machineSize - 2
+    //   })
+    //   .attr('stroke','black')
+    //   .attr('stroke-width',1)
 
 
 
@@ -178,7 +191,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
   svg.selectAll('.chart')
       .data(data)
     .enter().append('rect')
-      .attr('class', 'bar')
+      .attr('class', 'bar bonder ' + name)
       .attr('x', function(d) {
         return x(d.PROCESS_DATE)+2;
       })
@@ -192,15 +205,15 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
            return "fill: red; stroke: black; stroke-width: 0"
         }
       })
-      .attr('width', 3.44)
+      .attr('width', 3)
       .attr('height', function(d) {
-        return 36
+        return 30
       });
 // lineas verdes indican el tiempo de proceso del equipo
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
-      .attr('class', 'process_time')
+      .attr('class', 'process_time bonder ' + name)
       .attr('x1', function(d) {
         return x(d.dt_start)+6; 
       })
@@ -219,20 +232,20 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
-      .attr('class', 'deadTime')
+      .attr('class', 'deadTime bonder ' + name)
       .attr('x1', function(d) { return x(d.PCT)+4; })
       .attr('y1', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-16+(machineOffset))
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
       })
       .attr('x2', function(d) { return x(d.dt_start)+6; })
       .attr('y2', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-16+(machineOffset))
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
       })
       .attr('stroke',function(d){
         if (d.PCT >= d.dt_start){
           return 'gold'
         }else {
-          return 'yellow'
+          return 'transparent'
         }
         })
       .attr('stroke-width',12);
@@ -242,14 +255,14 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
-      .attr('class', 'deadTime')
+      .attr('class', 'deadTime bonder ' + name)
       .attr('x1', function(d) { return x(d.deadTime)+6; })
       .attr('y1', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-28+(machineOffset))
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
       })
       .attr('x2', function(d) { return x(d.dt_start)+6; })
       .attr('y2', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-28+(machineOffset))
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
       })
       .attr('stroke','red')
       .attr('stroke-width',12);
