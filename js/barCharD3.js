@@ -15,7 +15,7 @@ bonderFilter = function bonderFilter (filter) {
 }
 
 
-d3.csv('toolbox.php/type/silens',function (data) {
+d3.csv('toolbox.php/type/deflector',function (data) {
   // console.log(JSON.stringify(data))
 
 // Convierto la fecha (el texto) en una fecha real
@@ -32,7 +32,7 @@ d3.csv('toolbox.php/type/silens',function (data) {
   
 // Genero los valores iniciales para el marco del grafico
   var margin = {top: 40, right: 40, bottom: 40, left:40},
-      width = 1500,
+      width = parseInt(d3.select('body').style('width')),
       height = 400+margin.top + margin.bottom,
       titleSpace = 180,
       firstTime = new Date((new Date(data[0].PROCESS_DATE.valueOf())).setSeconds(-data[0].CYCLE_TIME)),
@@ -124,7 +124,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
     el.ct = el.CYCLE_TIME/60 
     //el.ct = (el.CYCLE_TIME/60>150)?150:el.CYCLE_TIME/60
     el.ct = 8
-    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-1200)) //process cycle time
+    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-( 15 *60))) //process cycle time
     el.dt_start = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-el.CYCLE_TIME))
     
     if(index === 0){
@@ -199,7 +199,7 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
         return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)+2 + (machineOffset))
       })
       .attr('style', function(d){
-        if (d.PASS_FAIL === 'P'){
+        if (d.PASS_FAIL === 'PASS'){
            return "fill: blue; stroke: blue; stroke-width: 0"
         }else{
            return "fill: red; stroke: black; stroke-width: 0"
@@ -252,20 +252,20 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
 
 
 // lineas rojas indican el tiempo muerto (iddleTime)
-  svg.selectAll('.chart')
-      .data(data)
-    .enter().append('line')
-      .attr('class', 'deadTime bonder ' + name)
-      .attr('x1', function(d) { return x(d.deadTime)+6; })
-      .attr('y1', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
-      })
-      .attr('x2', function(d) { return x(d.dt_start)+6; })
-      .attr('y2', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
-      })
-      .attr('stroke','red')
-      .attr('stroke-width',12);
+  // svg.selectAll('.chart')
+  //     .data(data)
+  //   .enter().append('line')
+  //     .attr('class', 'deadTime bonder ' + name)
+  //     .attr('x1', function(d) { return x(d.deadTime)+6; })
+  //     .attr('y1', function(d) {
+  //       return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
+  //     })
+  //     .attr('x2', function(d) { return x(d.dt_start)+6; })
+  //     .attr('y2', function(d) {
+  //       return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
+  //     })
+  //     .attr('stroke','red')
+  //     .attr('stroke-width',12);
   
 
   })

@@ -5,30 +5,45 @@ include "../inc/database.php";
 $app = new Slim();
 
 $app->get('/', 'index' );
-$app->get('/type/:machineName', 'csvFromTypeOfMachine' );
-$app->get('/all', 'csvFromAllCyBonders' );
+$app->get('/mxoptix/:area', 'query_to_mxoptix' );
+$app->get('/pgt/:area', 'query_to_PGT' );
+$app->get('/mxapps/:area', 'query_to_MxApps' );
 
 
 
 function index()
 {
-    echo "Error: solo puedes accesar el servicio con una petision. Revisa la API!";
+    echo "Error: solo puedes accesar el servicio con una peticion. Revisa la API!";
 }
 
-function csvFromAllCyBonders()
+function query_to_mxoptix($area){
+    if( $area != '' ){
+        queryAndReturnCSV_Ans('MxOptix', $area);
+    }
+}
+function query_to_PGT($area){
+    if( $area != '' ){
+        queryAndReturnCSV_Ans('PGT', $area);
+    }
+}
+function query_to_MxApps($area){
+    if( $area != '' ){
+        queryAndReturnCSV_Ans('MxApps', $area);
+    }
+}
+
+function queryAndReturnCSV_Ans($connection, $area)
 {
     try {
-        $DB = new MxOptix();
-        $query = file_get_contents('sql/silens.sql');
+        $DB = new $connection();
+        $query = file_get_contents('sql/' . $area .'.sql');
         $DB->setQuery($query);
         $results = null;
         oci_execute($DB->statement);
         oci_fetch_all($DB->statement, $results,0,-1,OCI_FETCHSTATEMENT_BY_ROW);
-        // print_r($results);
-        // print_r($results);
-        $ans = array2csv($results);
-        file_put_contents('silens.csv', $ans);
-        echo trim($ans);
+        $ans = trim(array2csv($results));
+        file_put_contents($area . '.csv', $ans);
+        echo $ans;
         $DB->close();
     } catch (Exception $e) {
         $DB->close();
@@ -38,18 +53,16 @@ function csvFromAllCyBonders()
 function csvFromTypeOfMachine($machineName='')
 {
     try {
-        $DB = new MxOptix();
-        $query = file_get_contents('sql/silens.sql');
+        $DB = new PGT();
+        $query = file_get_contents('sql/deflector.sql');
         $DB->setQuery($query);
         $results = null;
-        $DB->bind_vars(':system_id',$machineName);
+        // $DB->bind_vars(':system_id',$machineName);
         oci_execute($DB->statement);
         oci_fetch_all($DB->statement, $results,0,-1,OCI_FETCHSTATEMENT_BY_ROW);
-        // print_r($results);
-        // print_r($results);
-        $ans = array2csv($results);
-        file_put_contents('silens.csv', $ans);
-        echo trim($ans);
+        $ans = trim(array2csv($results));
+        file_put_contents('deflector.csv', $ans);
+        echo $ans;
         $DB->close();
     } catch (Exception $e) {
         $DB->close();
