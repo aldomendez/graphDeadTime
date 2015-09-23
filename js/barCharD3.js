@@ -15,7 +15,7 @@ bonderFilter = function bonderFilter (filter) {
 }
 
 
-d3.csv('toolbox.php/type/deflector',function (data) {
+d3.csv('toolbox.php/mxoptix/silens',function (data) {
   // console.log(JSON.stringify(data))
 
 // Convierto la fecha (el texto) en una fecha real
@@ -34,10 +34,11 @@ d3.csv('toolbox.php/type/deflector',function (data) {
   var margin = {top: 40, right: 40, bottom: 40, left:40},
       width = parseInt(d3.select('body').style('width')),
       height = 400+margin.top + margin.bottom,
-      titleSpace = 180,
+      titleSpace = 110,
       firstTime = new Date((new Date(data[0].PROCESS_DATE.valueOf())).setSeconds(-data[0].CYCLE_TIME)),
       machineSize = 40
-      lastTime = data[data.length - 1].PROCESS_DATE 
+      lastTime = data[data.length - 1].PROCESS_DATE
+      ideal_cycle_time = 20
 
 
   var x = d3.time.scale()
@@ -62,8 +63,10 @@ d3.csv('toolbox.php/type/deflector',function (data) {
       .attr('class', 'chart')
       .attr('width', width)
       .attr('height', height)
-    .append('g')
-      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+      .on('mousemove',function onMousemove () {
+        // console.log(d3.mouse(this))
+      }).append('g')
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
 
     // svg.selectAll('.chart')
     //   .data('a')
@@ -121,14 +124,20 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
   });
   
   data = data.map(function(el,index,arr){
+    // if (index === 0){
+    //   el.first = true;
+    // }else {
+    //   el.first = false;
+    // }
     el.ct = el.CYCLE_TIME/60 
     //el.ct = (el.CYCLE_TIME/60>150)?150:el.CYCLE_TIME/60
     el.ct = 8
-    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-( 15 *60))) //process cycle time
+    el.PCT = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-( ideal_cycle_time *60))) //process cycle time
     el.dt_start = new Date((new Date(el.PROCESS_DATE.valueOf())).setSeconds(-el.CYCLE_TIME))
     
     if(index === 0){
-        el.deadTime = new Date(el.dt_start.valueOf())
+        // el.deadTime = firstTime
+        el.deadTime = el.dt_start
     }else if (index !== arr.length){
         el.deadTime = new Date(arr[index-1].PROCESS_DATE)
     } else {
@@ -158,57 +167,60 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
           console.log('deselect all');
           d3.selectAll('.bonder').attr('v-active', 'all').transition().duration(200).style('opacity',1)
         }else{
-          console.log('select only some');
+          // console.log('select only some');
           d3.selectAll('.bonder').attr('v-active', e).transition().duration(200).style('opacity',0.1)
           d3.selectAll('.'+e).attr('v-active',e).transition().duration(300).delay(180).style('opacity',1)
         }
       })
 
 // Linea de separacion entre maquinas
-    // svg.selectAll('.chart')
-    //   .data('a')
-    //   .enter().append('line')
-    //   .attr('class','divisionLine')
-    //   .attr('x1',function () {
-    //     return 0
-    //   })
-    //   .attr('y1',function () {
-    //     return height - margin.top - margin.bottom - machineOffset - machineSize - 2
-    //   })
-    //   .attr('x2',function () {
-    //     return x(lastTime)
-    //   })
-    //   .attr('y2',function () {
-    //     return height - margin.top - margin.bottom - machineOffset - machineSize - 2
-    //   })
-    //   .attr('stroke','black')
-    //   .attr('stroke-width',1)
+    svg.selectAll('.chart')
+      .data('a')
+      .enter().append('line')
+      .attr('class','divisionLine')
+      .attr('x1',function () {
+        return 0
+      })
+      .attr('y1',function () {
+        return height - margin.top - margin.bottom - machineOffset - machineSize - 2
+      })
+      .attr('x2',function () {
+        return x(lastTime)
+      })
+      .attr('y2',function () {
+        return height - margin.top - margin.bottom - machineOffset - machineSize - 2
+      })
+      .attr('stroke','black')
+      .attr('stroke-width',1)
 
 
 
 
 //lineas azules indican el punto en el tiempo en es que se registro la medicion
-  svg.selectAll('.chart')
-      .data(data)
-    .enter().append('rect')
-      .attr('class', 'bar bonder ' + name)
-      .attr('x', function(d) {
-        return x(d.PROCESS_DATE)+2;
-      })
-      .attr('y', function(d) {
-        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)+2 + (machineOffset))
-      })
-      .attr('style', function(d){
-        if (d.PASS_FAIL === 'PASS'){
-           return "fill: blue; stroke: blue; stroke-width: 0"
-        }else{
-           return "fill: red; stroke: black; stroke-width: 0"
-        }
-      })
-      .attr('width', 3)
-      .attr('height', function(d) {
-        return 30
-      });
+  // svg.selectAll('.chart')
+  //     .data(data)
+  //   .enter().append('rect')
+  //     .attr('class', 'bar bonder ' + name)
+  //     .attr('x', function(d) {
+  //       return x(d.PROCESS_DATE)+2;
+  //     })
+  //     .attr('y', function(d) {
+  //       return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)+2 + (machineOffset))
+  //     })
+  //     .attr('style', function(d){
+  //       if (d.PASS_FAIL === 'P'){
+  //          return "fill: blue; stroke: blue; stroke-width: 0"
+  //       }else{
+  //          return "fill: red; stroke: black; stroke-width: 0"
+  //       }
+  //     })
+  //     .attr('width', 1)
+  //     .attr('height', function(d) {
+  //       return 30
+  //     });
+
+
+
 // lineas verdes indican el tiempo de proceso del equipo
   svg.selectAll('.chart')
       .data(data)
@@ -225,14 +237,23 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
         return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4 + (machineOffset))
       })
       .attr('stroke','green')
-      .attr('stroke-width',12);
+      .attr('stroke-width',12)
+      .on('mouseenter',function (d) {
+        // console.log(d)
+        d3.selectAll('.overTime').transition().duration(150).style('opacity',0.1)
+        d3.selectAll('.deadTime').transition().duration(150).style('opacity',0.1)
+      })
+      .on('mouseout',function (d) {
+        d3.selectAll('.overTime').transition().duration(150).style('opacity',1)
+        d3.selectAll('.deadTime').transition().duration(150).style('opacity',1)
+      });
 
 
 // lineas naranjas o amarillas indican el tiempo de proceso exedente de la pieza
   svg.selectAll('.chart')
       .data(data)
     .enter().append('line')
-      .attr('class', 'deadTime bonder ' + name)
+      .attr('class', 'overTime bonder ' + name)
       .attr('x1', function(d) { return x(d.PCT)+4; })
       .attr('y1', function(d) {
         return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
@@ -246,27 +267,82 @@ Agrupar datos por maquinas y dibujarlas en la pantalla empieza aqui
           return 'gold'
         }else {
           return 'transparent'
-        }
-        })
-      .attr('stroke-width',12);
+        }})
+      .attr('stroke-width',12)
+      .on('mouseenter',function (d) {
+        // console.log(d)
+        d3.selectAll('.process_time').transition().duration(150).style('opacity',0.1)
+        d3.selectAll('.deadTime').transition().duration(150).style('opacity',0.1)
+      })
+      .on('mouseout',function (d) {
+        d3.selectAll('.process_time').transition().duration(150).style('opacity',1)
+        d3.selectAll('.deadTime').transition().duration(150).style('opacity',1)
+      });
 
+
+redLines = data.filter(function filterWhenMoreThanXMinutes (d) {
+  var timeDiff = (d.dt_start - d.deadTime)/1000;
+  if (timeDiff>600){
+    return true;
+  }
+})
 
 // lineas rojas indican el tiempo muerto (iddleTime)
-  // svg.selectAll('.chart')
-  //     .data(data)
-  //   .enter().append('line')
-  //     .attr('class', 'deadTime bonder ' + name)
-  //     .attr('x1', function(d) { return x(d.deadTime)+6; })
-  //     .attr('y1', function(d) {
-  //       return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
-  //     })
-  //     .attr('x2', function(d) { return x(d.dt_start)+6; })
-  //     .attr('y2', function(d) {
-  //       return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
-  //     })
-  //     .attr('stroke','red')
-  //     .attr('stroke-width',12);
+  svg.selectAll('.chart')
+      .data(redLines)
+    .enter().append('line')
+      .attr('class', 'deadTime bonder ' + name)
+      .attr('x1', function(d) { return x(d.deadTime)+6; })
+      .attr('y1', function(d) {
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
+      })
+      .attr('x2', function(d) { return x(d.dt_start)+6; })
+      .attr('y2', function(d) {
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct)-4+(machineOffset))
+      })
+      .attr('stroke','red')
+      .attr('stroke-width',12)
+      .on('click',function redLineClick (d) {
+        var timeDiff = (d.dt_start - d.deadTime)/1000;
+        var pzCount = timeDiff/(20*60);
+        console.log("in " + Math.round(timeDiff/60) + "min se dejaron de hacer " + Math.round(pzCount,2) + " piezas");
+      })
+      .on('mouseenter',function (d) {
+        // console.log(d)
+        d3.selectAll('.process_time').transition().duration(150).style('opacity',0.1)
+        d3.selectAll('.overTime').transition().duration(150).style('opacity',0.1)
+      })
+      .on('mouseout',function (d) {
+        d3.selectAll('.process_time').transition().duration(150).style('opacity',1)
+        d3.selectAll('.overTime').transition().duration(150).style('opacity',1)
+      });
   
+
+// otro formato de lineas azules
+// lo tengo que poner hasta aqui por que si no quedan abajo y no de ven
+  svg.selectAll('.chart')
+      .data(data)
+    .enter().append('line')
+      .attr('class', 'process_time bonder ' + name)
+      .attr('x1', function(d) {
+        return x(d.dt_start)+6; 
+      })
+      .attr('y1', function(d) {
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct) + (machineOffset))
+      })
+      .attr('x2', function(d) { return x(d.PROCESS_DATE)+2; })
+      .attr('y2', function(d) {
+        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.ct) + (machineOffset))
+      })
+      .attr('stroke',function (d) {
+        if (d.PASS_FAIL === 'P'){
+          return 'blue';
+        } else {
+          return 'red'
+        }
+      })
+      .attr('stroke-width',3);
+
 
   })
 
