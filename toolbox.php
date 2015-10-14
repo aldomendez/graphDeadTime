@@ -5,7 +5,7 @@ include "../inc/database.php";
 $app = new Slim();
 
 $app->get('/', 'index' );
-$app->get('/backup/:file', 'backup' );
+$app->get('/cache/:file', 'backup' );
 $app->get('/mxoptix/:area', 'query_to_mxoptix' );
 $app->get('/pgt/:area', 'query_to_PGT' );
 $app->get('/mxapps/:area', 'query_to_MxApps' );
